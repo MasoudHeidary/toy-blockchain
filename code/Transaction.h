@@ -21,8 +21,6 @@ struct Transaction
 };
 
 
-
-
 Transaction get_random_transaction(const std::vector<std::string> &names, const int max_amount) {
 
     static std::mt19937 rng(static_cast<unsigned int>(time(nullptr)));
