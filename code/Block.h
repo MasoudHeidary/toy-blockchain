@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 #include <random>
+#include <chrono>
 
 #define TRANSACTION_BLOCK_SIZE 10
 #define MINE_DIFFICULTY 6
@@ -40,7 +41,8 @@ public:
         return sha256(s.str());
     }
 
-    void mine_block() {
+    double mine_block() {
+        auto _start_time = std::chrono::high_resolution_clock::now();
         std::string leadzero(MINE_DIFFICULTY, '0');
         std::string hash;
 
@@ -52,6 +54,18 @@ public:
         } while (hash.substr(0, MINE_DIFFICULTY) != leadzero);
         
         block_hash = hash;
+
+        auto _end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(_end_time - _start_time);
+        return duration.count();
+    }
+
+    bool is_valid() const {
+        if (markle_root != get_markle_root())
+            return false;
+        if (block_hash != get_block_hash())
+            return false;
+        return true;
     }
 
     void print() const {
@@ -62,9 +76,9 @@ public:
         cout << "Merkle Root: " << markle_root << endl;
         cout << "Nonce: " << nonce << endl;
         cout << "Block Hash: " << block_hash << endl;
+        cout << "Is Valid: " << (is_valid() ? "TRUE" : "FALSE") << endl;
         cout << "Transactions: " << endl;
         for (auto& tx : transactions)
             cout << "  - " << tx.to_string() << endl;
-        cout << "-----------------------------" << endl;
     }
 };
