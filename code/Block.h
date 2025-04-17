@@ -6,7 +6,7 @@
 #include <chrono>
 
 #define TRANSACTION_BLOCK_SIZE 10
-#define MINE_DIFFICULTY 6
+#define MINE_DIFFICULTY 5
 
 class Block {
 
@@ -43,28 +43,33 @@ public:
 
     double mine_block() {
         auto _start_time = std::chrono::high_resolution_clock::now();
-        std::string leadzero(MINE_DIFFICULTY, '0');
-        std::string hash;
 
         do {
             nonce++;
-            timestamp = time(nullptr);
-
-            hash = get_block_hash();
-        } while (hash.substr(0, MINE_DIFFICULTY) != leadzero);
-        
-        block_hash = hash;
+            block_hash = get_block_hash();
+        } while (not is_hash_lead());
 
         auto _end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(_end_time - _start_time);
         return duration.count();
     }
 
+    // Block Hash starting with n '0's
+    bool is_hash_lead() const {
+        std::string leadzero(MINE_DIFFICULTY, '0');
+        return (block_hash.substr(0, MINE_DIFFICULTY) == leadzero);
+    }
+
     bool is_valid() const {
         if (markle_root != get_markle_root())
             return false;
+
         if (block_hash != get_block_hash())
             return false;
+
+        if (not is_hash_lead())
+            return false;
+        
         return true;
     }
 
