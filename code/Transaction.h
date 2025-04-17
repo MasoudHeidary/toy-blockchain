@@ -38,4 +38,13 @@ Transaction get_random_transaction(const std::vector<std::string> &names, const 
     return {sender, receiver, amount};
 }
 
+std::vector<Transaction> random_tx_lst(const std::vector<std::string> &names, const int max_amount, const int count) {
+    std::vector<Transaction> lst;
+    for (size_t i=0; i<count; i++)
+        lst.push_back(
+            get_random_transaction(names, max_amount)
+        );
+    
+    return lst;
+}
 
