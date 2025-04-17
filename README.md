@@ -100,4 +100,6 @@ This immutability offers several security advantages:
 
 In the context of this project, the blockchain serves as a miniature secure ledger where transaction history cannot be forged without redoing significant computational work, aligning with the core principles of confidentiality, integrity, and availability (CIA) in cybersecurity.
 
+
+sudo apt install libssl-dev
 g++ -o main main.cpp -lssl -lcrypto
