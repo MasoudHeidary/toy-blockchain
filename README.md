@@ -7,7 +7,7 @@ Apr 16, 2025
 > A simplified blockchain project inspired by Bitcoin, built for a Cybersecurity course at the University of Houston.
 
 
-## About the Project 📚 
+## About the Project
 
 This C++ implementation demonstrates the key elements of a blockchain:
 - **Proof-of-Work (PoW)**
@@ -18,7 +18,7 @@ This C++ implementation demonstrates the key elements of a blockchain:
 
 The goal is to showcase blockchain principles that support **data integrity**, **tamper resistance**, and **trustless verification**, all of which are critical in cybersecurity.
 
-# How to Build & Run 🔧
+# How to Build & Run
 To compile and run the code, make sure OpenSSL development libraries are installed:
 ```console
 sudo apt install libssl-dev
@@ -264,7 +264,9 @@ Example for `#define MINE_DIFFICULTY 7`:
 ```console
 hain Hash sequence:
  - 0000000000000000000000000000000000000000000000000000000000000000 -> 00000bb31d28042367d1a3d9b2b662bcc9c3bd0fcdcfa0dc05dc8d6a7cf13ca4
+
  - 00000bb31d28042367d1a3d9b2b662bcc9c3bd0fcdcfa0dc05dc8d6a7cf13ca4 -> 000005fc7d4b66716742cebb74f68f9fbad45cf4d7059dd7eaed4a224dd63b40
+ 
  - 000005fc7d4b66716742cebb74f68f9fbad45cf4d7059dd7eaed4a224dd63b40 -> 00000ad2da75e0573f59fe3fd42d5a5cb82acf9fda7ad9417b3062a16410c9b8
  - ...
 ```
