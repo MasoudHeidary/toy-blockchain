@@ -34,7 +34,7 @@ int main(){
     
     
     // random transactions
-    std::cout << "one random transaction:" << std::endl;
+    std::cout << "a single random transactions:" << std::endl;
     
     std::vector<std::string> names = {
         "Alice", "Bob", "Charlie", "Dave", "Eve",
@@ -49,12 +49,9 @@ int main(){
     // making list of transactions for one Block
     std::cout << "list of random transaction for one Block" << std::endl;
 
-    std::vector<Transaction> tx_list;
-    for (int i=0; i<TRANSACTION_BLOCK_SIZE; i++) {
-        Transaction t = get_random_transaction(names, max_tx_amount);
-        tx_list.push_back(t);
-
-        std::cout << "trasaction [" << i << "]: " << t.to_string() << std::endl;
+    std::vector<Transaction> tx_list = random_tx_lst(names, max_tx_amount, TRANSACTION_BLOCK_SIZE);
+    for (const auto &tx: tx_list) {
+        tx.print();
     }
     coutln();
 

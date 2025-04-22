@@ -22,8 +22,7 @@ The goal is to showcase blockchain principles that support **data integrity**, *
 To compile and run the code, make sure OpenSSL development libraries are installed:
 ```console
 sudo apt install libssl-dev
-g++ -o main main.cpp -lssl -lcrypto
-./main
+g++ -o main main.cpp -lssl -lcrypto && ./main
 ```
 
 ## Abstraction
@@ -136,6 +135,8 @@ struct Transaction {
 };
 ```
 
+<br>
+
 ### Block
 A block contains a list of transactions, timestamp, previous block's hash, Merkle root, nonce, and current block hash:
 
@@ -151,6 +152,8 @@ class Block {
 };
 ```
 
+<br>
+
 ### Blockchain
 A chain of validated blocks:
 
@@ -159,6 +162,8 @@ class BlockChain {
     std::vector<Block> blocks;
 };
 ```
+
+<br>
 
 ## Block Construction
 Each block contains exactly 10 transactions.
@@ -169,6 +174,9 @@ Transactions are randomly generated from a pool of names and amounts:
 ```c++
 Transaction get_random_transaction(const std::vector<std::string>& names, int max_amount);
 ```
+
+<br>
+
 
 ## Proof-of-Work Mechanism
 
@@ -184,6 +192,9 @@ double mine_block() {
 ```
 
 `is_hash_lead()` checks if the hash starts with the correct number of leading zeros.
+
+<br>
+
 
 ## Blockchain Validation
 
@@ -218,12 +229,65 @@ bool BlockChain::is_valid() const {
 ```
 
 
+<br>
+
 # Result & Evaluation
 We conducted a simulation of a simple blockchain network by creating and mining a chain of 10 blocks, each containing 10 transactions. The mining difficulty was set such that a valid block hash required a prefix of five leading zeros. The following key points summarize the behavior and performance:
 
+<br>
+
 ## Transaction Generation:
-Random transactions between predefined users (e.g., Alice, Bob, Eve, etc.) were generated for each block.
-Example:
+
+You can also manually create a specific transaction by directly providing the sender, receiver, and amount:
+```c++
+Transaction t {"Alice", "Bob", 5};
+t.print();
+```
+this will output:
+```console
+Alice -> Bob: 5
+```
+
+<br>
+
+### One Random Transaction
+Random transactions between predefined users (e.g., Alice, Bob, Eve, etc.) are generated for each block. Each transaction includes:
+
+- A random sender
+- A random receiver
+- A random amount (up to a defined max_tx_amount)
+
+This is handled using a helper function `get_random_transaction(...)`, which randomly selects sender/receiver names from a list and assigns a random amount.
+
+Example of generating one random transaction:
+```c++
+const int max_tx_amount = 10;
+std::vector<std::string> names = {
+    "Alice", "Bob", "Charlie", "Dave", "Eve",
+    "Frank", "Grace", "Heidi", "Ivan", "Judy"
+};
+
+Transaction rt = get_random_transaction(names, max_tx_amount);
+rt.print();
+```
+
+Sample output:
+```console
+Eve -> Grace: 9.73
+```
+
+<br>
+
+### List of Random Transactions for one Block
+Example of generating a list of Transactions for one Block:
+```c++
+std::vector<Transaction> tx_list = random_tx_lst(names, max_tx_amount, TRANSACTION_BLOCK_SIZE);
+
+for (const auto &tx: tx_list) {
+    tx.print();
+}
+```
+Sample output:
 ```console
 trasaction [0]: Eve -> Grace: 9.73
 trasaction [1]: Bob -> Grace: 4.84
@@ -236,22 +300,71 @@ trasaction [7]: Bob -> Ivan: 5.27
 trasaction [8]: Dave -> Alice: 2.81
 trasaction [9]: Bob -> Grace: 7.8
 ```
+Each of these is randomly created during the block formation phase, simulating real-world transaction traffic in a toy blockchain environment.
+
+<br>
 
 ## Mining Time:
 
+Once the genesis (first) block is mined, additional blocks can be mined and appended to the chain. Each block contains a new list of randomly generated transactions, a reference to the hash of the previous block, and a newly computed valid hash that satisfies the mining difficulty.
 
-The time to mine each block varied based on the nonce search to meet the hash difficulty.
+The process follows these steps:
+1. Generate a list of random transactions.
+2. Construct a new block, using:
+   - The current index.
+   - The transaction list.
+   - The previous block's hash (to preserve the chain).
+3. Mine the block: this means finding a valid hash that starts with a specified number of zeros (according to the difficulty).
+4. Add the block to the chain.
 
-Example for `#define MINE_DIFFICULTY 5`:
+#### Code Example
+```c++
+std::cout << "adding 9 more Blocks to the BlockChain" << std::endl;
+
+for (int index = 1; index < 10; index++) {
+    std::vector<Transaction> tx_list;
+
+    Block block {
+        index,
+        random_tx_lst(names, max_tx_amount, TRANSACTION_BLOCK_SIZE),
+        chain.get_last_hash(), // previous hash for linking
+    };
+
+    double exetime = block.mine_block();  // perform Proof of Work
+    chain.add_block(block);               // append to blockchain
+
+    std::cout << " - Block [" << index << "] mined in " << exetime << "s" << std::endl;
+}
+coutln();
+```
+- `random_tx_lst(...)`: creates a list of `TRANSACTION_BLOCK_SIZE` random transactions.
+- `chain.get_last_hash()`: fetches the hash of the last block to maintain integrity.
+- `mine_block()`: attempts different nonces until a valid hash is found (based on the mining difficulty).
+- `chain.add_block(...)`: safely appends the mined block to the blockchain.
+
+<br>
+
+output for `#define MINE_DIFFICULTY 5`:
 ```console
- - Block [0] mined in 1s
  - Block [1] mined in 1s
  - Block [2] mined in 5s
- - Block [3] mined in 3s
+ - Block [3] mined in 11s
+ - Block [4] mined in 3s
+ - Block [5] mined in 4s
  - ...
 ```
 
-Example for `#define MINE_DIFFICULTY 7`:
+output for `#define MINE_DIFFICULTY 6`:
+```console
+ - Block [1] mined in 120s
+ - Block [2] mined in 40s
+ - Block [3] mined in 18s
+ - Block [4] mined in 2s
+ - Block [5] mined in 11s
+ - ...
+```
+
+output for `#define MINE_DIFFICULTY 7`:
 ```console
  - Block [1] mined in 580s
  - Block [2] mined in 308s
@@ -259,8 +372,12 @@ Example for `#define MINE_DIFFICULTY 7`:
  - ...
 ```
 
-## Chain Sequence
+<br>
 
+## Chain Sequence
+Each block in the blockchain is cryptographically linked to the one before it using its hash. This creates a secure and verifiable sequence of data—any change in a previous block will invalidate the hashes of all subsequent blocks.
+
+The sequence of hashes looks like this:
 ```console
 hain Hash sequence:
  - 0000000000000000000000000000000000000000000000000000000000000000 -> 00000bb31d28042367d1a3d9b2b662bcc9c3bd0fcdcfa0dc05dc8d6a7cf13ca4
@@ -271,6 +388,76 @@ hain Hash sequence:
  - ...
 ```
 
+This chain of hashes ensures immutability:
+
+- If any transaction in a block changes, the Merkle Root will change.
+- That causes the block's hash to change.
+- As a result, all following blocks will have incorrect previous_hash values, breaking the chain.
+
+This is why blockchains are considered secure and tamper-evident.
+<br>
+
+<br>
+
+# Blockchain Manipulation Attempt
+This section demonstrates why tampering with a single block in the blockchain invalidates the entire chain and is computationally infeasible to fix without significant effort.
+
+## Step 1: Replace a Transaction in Block[5]
+```c++
+chain.blocks[5].transactions[0] = get_random_transaction(names, max_tx_amount);
+```
+
+**Result:**
+```console
+ - Block [5] Hash is an invalid Hash (as the content is altered) 
+ - Block [5] invalid MerkleRoot (as Transactions are altered) 
+```
+- **Why it fails:** Each block contains a hash that depends on its content (including transactions).
+- By changing a transaction, the content changes, making the stored block hash **no longer valid**.
+- Also, the `Merkle Root`, which is a hash summary of all transactions, becomes invalid.
+
+<br>
+
+## Step 2: Recalculate Merkle Root
+```c++
+chain.blocks[5].markle_root = chain.blocks[5].get_markle_root();
+```
+
+**Result:**
+```console
+ - Block [5] Hash is an invalid Hash (as the content is altered) 
+```
+
+<br>
+
+- **Why it still fails:** Even though the Merkle Root is corrected, the overall `block hash` is still outdated and incorrect.
+- The block’s hash was originally mined to satisfy the difficulty (e.g., having 5 leading zeros), and recalculating the Merkle Root doesn’t solve this.
+
+## Step 3: Remine Block[5]
+```c++
+chain.blocks[5].mine_block();
+```
+
+<br>
+
+**Result:**
+```console
+ - Block [6] is not following the Block[5] Hash 
+```
+- **Why it fails now:** Even after re-mining `Block[5]` to get a valid hash, `Block[6]` still stores the old hash of `Block[5]` as its previous_hash.
+- So `Block[6]` becomes invalid because it no longer links correctly to the new hash of `Block[5]`.
+
+<br>
+
+## Final Consequence
+- **Explanation:** You would have to re-mine every block after `Block[5]` to fix the entire chain.
+- Given the mining difficulty and computational cost, this becomes practically impossible—this is exactly what gives blockchain its immutability and security.
+
+<br>
+<br>
+<br>
+<br>
+<br>
 
 # references
 - Wall Street Journal. (n.d.). CIO Explainer: What Is Blockchain? Retrieved from https://www.wsj.com/articles/BL-CIOB-8993
